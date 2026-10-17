@@ -776,7 +776,6 @@
     let isFetchingOlder = false;
     let allOlderLoaded = false;
     let isInitialLoadComplete = false;
-    let realtimeChildAddedAttached = false;
 
     // TYPING STATE & REALTIME PRESENCE CACHE
     let typingDebounceTimer = null;
@@ -890,7 +889,7 @@
       if (retryBtn) retryBtn.style.display = 'none';
       const pulseText = document.querySelector('.loading-pulse-text');
       if (pulseText) pulseText.innerText = 'Retrying connection 💕...';
-      initializeChatFeed(true);
+      initializeChatFeed();
     }
 
     function initAnimatedButterflies() {
@@ -1300,14 +1299,38 @@
       window.open(exactJitsiUrl, '_blank', 'noopener,noreferrer');
     }
 
-    /* CHAT CORE - INITIAL LOAD & FAST INSTANT DUAL-ONLINE SYNC */
-    function initializeChatFeed(isRetry = false) {
+    /* =========================================================
+       ETERNAL CONNECTION — CHAT STREAM
+       Initial load: 50 messages
+       Older history: 20 messages per batch
+       ========================================================= */
+
+    /* REALTIME CHAT STREAM INITIALIZATION */
+    function initializeChatFeed() {
       const chatContainer = document.getElementById('chat-stream');
       const loaderBar = document.getElementById('history-loader-bar');
-      
-      chatContainer.innerHTML = "";
+      const loadingScreen = document.getElementById('chat-loading-screen');
+
+      if (!chatContainer || !loaderBar || typeof db === 'undefined') {
+        console.error('Chat initialization failed: missing container, loader, or Firebase.');
+        if (typeof hideLoadingScreen === 'function') hideLoadingScreen();
+        return;
+      }
+
+      // Prevent overlapping initial-load requests.
+      if (window.__chatFeedInitializing) return;
+      window.__chatFeedInitializing = true;
+
+      const INITIAL_BATCH_SIZE = 50;
+
+      // Keep the existing loader element while clearing old message elements.
+      chatContainer.replaceChildren();
       chatContainer.appendChild(loaderBar);
-      
+      loaderBar.classList.remove('active');
+
+      const oldError = document.getElementById('chat-load-error');
+      if (oldError) oldError.remove();
+
       dedupMap.clear();
       oldestLoadedKey = null;
       newestLoadedKey = null;
@@ -1315,186 +1338,247 @@
       isFetchingOlder = false;
       isInitialLoadComplete = false;
 
-      db.ref('appState/chatFeed').limitToLast(15).once('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          const keys = Object.keys(val);
+      db.ref('appState/chatFeed')
+        .orderByKey()
+        .limitToLast(INITIAL_BATCH_SIZE)
+        .once('value')
+        .then((snapshot) => {
+          const val = snapshot.val() || {};
+          const keys = Object.keys(val).sort();
+
           if (keys.length > 0) {
             oldestLoadedKey = keys[0];
             newestLoadedKey = keys[keys.length - 1];
 
-            keys.forEach(key => {
+            keys.forEach((key) => {
               const msgData = val[key];
+
+              if (!msgData || dedupMap.has(key)) return;
+
               dedupMap.set(key, msgData);
               renderMessageElement(key, msgData, false);
             });
           }
-          if (keys.length < 15) allOlderLoaded = true;
-        } else {
-          allOlderLoaded = true;
-        }
 
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-        hideLoadingScreen();
-        isInitialLoadComplete = true;
+          // Fewer than 50 means the initial query reached the beginning.
+          allOlderLoaded = keys.length < INITIAL_BATCH_SIZE;
 
-        if (!realtimeChildAddedAttached) {
+          // Mark complete before attaching the listener. Existing children
+          // received by the listener are ignored through dedupMap.
+          isInitialLoadComplete = true;
+
+          hideLoadingScreen();
+          if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+          }
+
+          loaderBar.classList.remove('active');
+
           attachRealtimeListeners();
-          realtimeChildAddedAttached = true;
-        }
+          setupScrollToLoadOlder();
 
-        setupScrollToLoadOlder();
-      }, (error) => {
-        console.error("Firebase initial chat query failed:", error);
-        hideLoadingScreen();
-      });
-    }
+          // Start at the newest message on initial load.
+          chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    /* OPTIMIZED INSTANT PROGRESSIVE PREFETCHING ENGINE */
-    function fetchOlderHistoryBatch() {
-      if (isFetchingOlder || allOlderLoaded || !oldestLoadedKey) return;
-
-      isFetchingOlder = true;
-
-      const loaderBar = document.getElementById('history-loader-bar');
-      const chatContainer = document.getElementById('chat-stream');
-
-      if (loaderBar) {
-        loaderBar.classList.add('active');
-        loaderBar.querySelector('span').innerText =
-          '✨ Syncing older memories...';
-      }
-
-      const prevScrollHeight = chatContainer.scrollHeight;
-      const prevScrollTop = chatContainer.scrollTop;
-
-      db.ref('appState/chatFeed')
-        .orderByKey()
-        .endAt(oldestLoadedKey)
-        .limitToLast(21)
-        .once('value')
-        .then(snapshot => {
-          const val = snapshot.val();
-
-          if (!val) {
-            allOlderLoaded = true;
-            return;
-          }
-
-          const keys = Object.keys(val);
-
-          // The last key is the existing cursor message.
-          if (keys.length <= 1) {
-            allOlderLoaded = true;
-            return;
-          }
-
-          keys.pop();
-
-          if (keys.length === 0) {
-            allOlderLoaded = true;
-            return;
-          }
-
-          oldestLoadedKey = keys[0];
-
-          // Prepend in reverse iteration so the final order
-          // on screen remains oldest to newest.
-          for (let i = keys.length - 1; i >= 0; i--) {
-            const key = keys[i];
-
-            if (!dedupMap.has(key)) {
-              dedupMap.set(key, val[key]);
-              renderMessageElement(key, val[key], true);
-            }
-          }
-
-          // Preserve the user's viewport after inserting messages.
-          chatContainer.scrollTop =
-            prevScrollTop +
-            (chatContainer.scrollHeight - prevScrollHeight);
+          console.info(`Chat initialized: ${keys.length} messages loaded.`);
         })
-        .catch(error => {
-          console.error('Older chat history failed:', error);
+        .catch((error) => {
+          console.error('Firebase initial chat query failed:', error);
 
-          if (loaderBar) {
-            loaderBar.querySelector('span').innerText =
-              '⚠️ Could not load older messages. Check connection.';
+          isInitialLoadComplete = false;
+          loaderBar.classList.remove('active');
+
+          hideLoadingScreen();
+          if (loadingScreen) {
+            loadingScreen.style.display = 'none';
           }
+
+          let errorNotice = document.getElementById('chat-load-error');
+
+          if (!errorNotice) {
+            errorNotice = document.createElement('div');
+            errorNotice.id = 'chat-load-error';
+            errorNotice.style.cssText =
+              'padding:12px;text-align:center;color:#ffb6c1;font-size:14px;';
+            chatContainer.appendChild(errorNotice);
+          }
+
+          errorNotice.replaceChildren();
+
+          const message = document.createElement('div');
+          message.textContent =
+            'Could not load chat history. Check your connection and try again.';
+          errorNotice.appendChild(message);
+
+          const retryButton = document.createElement('button');
+          retryButton.type = 'button';
+          retryButton.textContent = 'Retry';
+          retryButton.style.cssText =
+            'margin:8px;padding:8px 16px;border-radius:10px;cursor:pointer;';
+          retryButton.addEventListener('click', initializeChatFeed);
+
+          errorNotice.appendChild(retryButton);
         })
         .finally(() => {
-          isFetchingOlder = false;
-
-          if (loaderBar) {
-            loaderBar.classList.remove('active');
-          }
+          window.__chatFeedInitializing = false;
         });
     }
 
+
+    /* LOAD OLDER MESSAGES IN BATCHES OF 20 */
+    function fetchOlderHistoryBatch() {
+      if (
+        isFetchingOlder ||
+        allOlderLoaded ||
+        !oldestLoadedKey ||
+        !isInitialLoadComplete
+      ) {
+        return;
+      }
+
+      const chatContainer = document.getElementById('chat-stream');
+      const loaderBar = document.getElementById('history-loader-bar');
+
+      if (!chatContainer || !loaderBar) return;
+
+      isFetchingOlder = true;
+      loaderBar.classList.add('active');
+
+      const oldScrollHeight = chatContainer.scrollHeight;
+      const oldScrollTop = chatContainer.scrollTop;
+      const cursorKey = oldestLoadedKey;
+
+      db.ref('appState/chatFeed')
+        .orderByKey()
+        .endAt(cursorKey)
+        .limitToLast(21) // 20 older messages plus the cursor message
+        .once('value')
+        .then((snapshot) => {
+          const val = snapshot.val() || {};
+          const keys = Object.keys(val).sort();
+
+          // The cursor is the oldest message already on screen.
+          const cursorIndex = keys.indexOf(cursorKey);
+
+          let olderKeys;
+
+          if (cursorIndex !== -1) {
+            olderKeys = keys.slice(0, cursorIndex);
+          } else {
+            // Fallback for unusual query results: exclude the cursor and
+            // any messages that are already in the deduplication map.
+            olderKeys = keys.filter(
+              (key) => key < cursorKey && !dedupMap.has(key)
+            );
+          }
+
+          if (olderKeys.length === 0) {
+            allOlderLoaded = true;
+            return;
+          }
+
+          // Older keys are ascending. Insert in reverse order because each
+          // prepended message is inserted before the current first message.
+          for (let i = olderKeys.length - 1; i >= 0; i--) {
+            const key = olderKeys[i];
+            const msgData = val[key];
+
+            if (!msgData || dedupMap.has(key)) continue;
+
+            dedupMap.set(key, msgData);
+            renderMessageElement(key, msgData, true);
+          }
+
+          oldestLoadedKey = olderKeys[0];
+
+          // If fewer than 20 older messages were returned, we've reached
+          // the beginning of the available history.
+          if (olderKeys.length < 20) {
+            allOlderLoaded = true;
+          }
+
+          // Preserve the reader's viewport while older messages are inserted.
+          const newScrollHeight = chatContainer.scrollHeight;
+          chatContainer.scrollTop =
+            oldScrollTop + (newScrollHeight - oldScrollHeight);
+        })
+        .catch((error) => {
+          console.error('Failed to load older chat messages:', error);
+          // Leave allOlderLoaded false so scrolling up can retry.
+        })
+        .finally(() => {
+          loaderBar.classList.remove('active');
+          isFetchingOlder = false;
+        });
+    }
+
+
+    /* SCROLL-UP HISTORY LOADER */
     function setupScrollToLoadOlder() {
       const chatContainer = document.getElementById('chat-stream');
       if (!chatContainer) return;
 
-      let scrollTimeout = null;
+      // Assigning onscroll replaces the previous handler instead of
+      // registering another handler every time initialization runs.
       chatContainer.onscroll = () => {
-        if (scrollTimeout) return;
-        scrollTimeout = setTimeout(() => {
-          scrollTimeout = null;
-          // Prefetch threshold: trigger fetch when within 400px of top
-          if (chatContainer.scrollTop < 400 && !isFetchingOlder && !allOlderLoaded && isInitialLoadComplete) {
-            fetchOlderHistoryBatch();
-          }
-        }, 30);
+        if (
+          chatContainer.scrollTop < 100 &&
+          !isFetchingOlder &&
+          !allOlderLoaded &&
+          isInitialLoadComplete
+        ) {
+          fetchOlderHistoryBatch();
+        }
       };
     }
 
+
+    /* REALTIME INSTANT MESSAGE SYNC WITHOUT REFRESH */
     function attachRealtimeListeners() {
-      // INSTANT DUAL-ONLINE SYNCHRONIZATION WITHOUT REFRESH
-      db.ref('appState/chatFeed').on('child_added', (snapshot) => {
+      const feedRef = db.ref('appState/chatFeed');
+
+      // Remove the previous copy of this listener if initialization repeats.
+      if (window.__chatFeedChildAddedHandler) {
+        feedRef.off('child_added', window.__chatFeedChildAddedHandler);
+      }
+
+      window.__chatFeedChildAddedHandler = (snapshot) => {
+        if (!isInitialLoadComplete) return;
+
         const key = snapshot.key;
         const msgData = snapshot.val();
 
-        if (!dedupMap.has(key)) {
-          dedupMap.set(key, msgData);
-          newestLoadedKey = key;
+        if (!key || !msgData || dedupMap.has(key)) return;
 
-          const chatContainer = document.getElementById('chat-stream');
-          const isAtBottom = (chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight) < 180;
-
-          renderMessageElement(key, msgData, false);
-
-          // Always auto-scroll if user is near bottom or on initial sync
-          if (isAtBottom || isInitialLoadComplete) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-          }
-        }
-      });
-
-      db.ref('appState/chatFeed').on('child_changed', (snapshot) => {
-        const key = snapshot.key;
-        const msgData = snapshot.val();
         dedupMap.set(key, msgData);
-        
-        const existingEl = document.getElementById(`msg-${key}`);
-        if (existingEl) {
-          updateMessageElementUI(existingEl, key, msgData);
-        }
-      });
 
-      db.ref('appState/chatFeed').on('child_removed', (snapshot) => {
-        const key = snapshot.key;
-        dedupMap.delete(key);
-        const existingEl = document.getElementById(`msg-${key}`);
-        if (existingEl) existingEl.remove();
-      });
+        const chatContainer = document.getElementById('chat-stream');
+        if (!chatContainer) return;
+
+        const isAtBottom =
+          chatContainer.scrollHeight -
+          chatContainer.scrollTop -
+          chatContainer.clientHeight < 150;
+
+        renderMessageElement(key, msgData, false);
+
+        if (isAtBottom || msgData.sender === currentUserRole) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      };
+
+      feedRef.on('child_added', window.__chatFeedChildAddedHandler);
     }
 
-    function renderMessageElement(key, msg, prependToTop = false) {
-      const currentUserIdKey = currentUserRole === "Mr. Sudip" ? "sudip" : "wifey";
-      if (msg.deletedFor && msg.deletedFor[currentUserIdKey]) return;
 
+    /* MESSAGE RENDERING — SUPPORTS APPENDING AND PREPENDING */
+    function renderMessageElement(key, msg, prependToTop = false) {
       const chatContainer = document.getElementById('chat-stream');
       const loaderBar = document.getElementById('history-loader-bar');
+
+      if (!chatContainer || !msg) return;
+
+      // Prevent duplicate DOM elements.
       let div = document.getElementById(`msg-${key}`);
 
       if (!div) {
@@ -1502,10 +1586,15 @@
         div.id = `msg-${key}`;
 
         if (prependToTop) {
-          if (loaderBar && loaderBar.nextSibling) {
+          // Insert before the first message, keeping the loader at the top.
+          const firstMessage = chatContainer.querySelector('.msg-bubble');
+
+          if (firstMessage) {
+            chatContainer.insertBefore(div, firstMessage);
+          } else if (loaderBar && loaderBar.parentNode === chatContainer) {
             chatContainer.insertBefore(div, loaderBar.nextSibling);
           } else {
-            chatContainer.insertBefore(div, chatContainer.firstChild);
+            chatContainer.prepend(div);
           }
         } else {
           chatContainer.appendChild(div);
@@ -1515,70 +1604,117 @@
       updateMessageElementUI(div, key, msg);
     }
 
+
+    /* MESSAGE UI — TEXT, IMAGE, AUDIO, SENDER AND TIME */
     function updateMessageElementUI(div, key, msg) {
-      const isSudip = msg.sender === "Mr. Sudip";
-      const isWifey = msg.sender === "Mrs. Sudip";
-      
+      const isSudip = msg.sender === 'Mr. Sudip';
+      const isWifey = msg.sender === 'Mrs. Sudip';
+
       div.className = `msg-bubble ${isSudip ? 'msg-sudip' : 'msg-wifey'}`;
       div.onclick = () => openDeleteModal(key);
 
-      const senderRibbonBadge = isWifey ? '<span class="msg-wifey-ribbon-tag">🎀</span>' : '';
+      const senderRibbonBadge = isWifey
+        ? '<span class="msg-wifey-ribbon-tag">🎀</span>'
+        : '';
 
-      if (msg.deletedForEveryone) {
-        div.innerHTML = `
-          <div class="msg-sender"><span>${senderRibbonBadge}${escapeHTML(msg.sender)}</span><span class="msg-time">${msg.time}</span></div>
-          <div class="msg-body msg-deleted">🚫 Message deleted</div>
-        `;
-      } else {
-        let safeText = escapeHTML(msg.text || '');
-        let formattedText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--soft-indigo); text-decoration: underline;">$1</a>');
+      const safeText = escapeHTML(msg.text || '');
+      let formattedText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--soft-indigo); text-decoration: underline;">$1</a>');
 
-        let bodyContent = msg.text ? `<div class="msg-body">${formattedText}</div>` : '';
+      let bodyContent = msg.text
+        ? `<div class="msg-body">${formattedText}</div>`
+        : '';
 
-        if (msg.mediaType === 'audio') {
-          bodyContent += `<audio src="${msg.media}" controls class="chat-audio-player"></audio>`;
-        } else if (msg.mediaType === 'image') {
-          bodyContent += `<img src="${msg.media}" class="chat-media-frame" loading="lazy" onclick="openLightbox('${msg.media}', '${escapeHTML(msg.sender)}', '${msg.time}')" />`;
-        } else if (msg.mediaType === 'meme') {
-          bodyContent += `<img src="${msg.media}" class="meme-card" loading="lazy" />`;
-        }
+      // Keep existing image/audio/meme message support.
+      if (msg.mediaType === 'audio' && msg.media) {
+        const audio = document.createElement('audio');
+        audio.src = msg.media;
+        audio.controls = true;
+        audio.className = 'chat-audio-player';
+        audio.preload = 'metadata';
 
-        div.innerHTML = `<div class="msg-sender"><span>${senderRibbonBadge}${escapeHTML(msg.sender)}</span><span class="msg-time">${msg.time}</span></div>${bodyContent}`;
+        const body = document.createElement('div');
+        body.innerHTML = bodyContent;
+        body.appendChild(audio);
+
+        bodyContent = body.innerHTML;
+      } else if (msg.mediaType === 'image' && msg.media) {
+        const image = document.createElement('img');
+        image.src = msg.media;
+        image.className = 'chat-media-frame';
+        image.loading = 'lazy';
+        image.alt = 'Chat image';
+        image.onclick = () => openLightbox(msg.media, escapeHTML(msg.sender), msg.time);
+
+        const body = document.createElement('div');
+        body.innerHTML = bodyContent;
+        body.appendChild(image);
+
+        bodyContent = body.innerHTML;
+      } else if (msg.mediaType === 'meme' && msg.media) {
+        const memeImg = document.createElement('img');
+        memeImg.src = msg.media;
+        memeImg.className = 'meme-card';
+        memeImg.loading = 'lazy';
+        memeImg.alt = 'Meme';
+
+        const body = document.createElement('div');
+        body.innerHTML = bodyContent;
+        body.appendChild(memeImg);
+
+        bodyContent = body.innerHTML;
       }
+
+      div.innerHTML =
+        `<div class="msg-sender">` +
+          `<span>${senderRibbonBadge}${escapeHTML(msg.sender || '')}</span>` +
+          `<span class="msg-time">${escapeHTML(String(msg.time || ''))}</span>` +
+        `</div>${bodyContent}`;
     }
 
-    function openLightbox(url, sender, time) {
-      document.getElementById('lightbox-img').src = url;
-      document.getElementById('lightbox-sender').innerText = `Shared by: ${sender}`;
-      document.getElementById('lightbox-time').innerText = time;
-      openModal('lightbox-modal');
-    }
 
-    async function sendChatMessage(text = null, mediaUrl = null, mediaType = 'image') {
+    /* SEND MESSAGE */
+    async function sendChatMessage(
+      text = null,
+      mediaUrl = null,
+      mediaType = 'image'
+    ) {
       const inputEl = document.getElementById('chat-input');
-      const messageText = text || inputEl.value.trim();
+
+      const messageText = text !== null
+        ? text.trim()
+        : (inputEl ? inputEl.value.trim() : '');
+
       if (!messageText && !mediaUrl) return;
 
-      if (!text && !mediaUrl) inputEl.value = "";
+      if (text === null && !mediaUrl && inputEl) {
+        inputEl.value = '';
+      }
 
       clearTypingStatus();
 
-      const newMsg = { 
-        sender: currentUserRole, 
-        text: messageText, 
-        time: getFormattedTime(), 
+      const newMsg = {
+        sender: currentUserRole,
+        text: messageText,
+        time: getFormattedTime(),
         timestamp: Date.now(),
-        deletedForEveryone: false 
+        deletedForEveryone: false
       };
-      
-      if (mediaUrl) { newMsg.media = mediaUrl; newMsg.mediaType = mediaType; }
 
-      await db.ref('appState/chatFeed').push(newMsg);
-      addXP(15);
+      if (mediaUrl) {
+        newMsg.media = mediaUrl;
+        newMsg.mediaType = mediaType;
+      }
 
-      setTimeout(() => {
-        sendTelegramNotification(currentUserRole, messageText || `[Sent a ${mediaType}]`);
-      }, 0);
+      try {
+        await db.ref('appState/chatFeed').push(newMsg);
+        addXP(15);
+        setTimeout(() => {
+          sendTelegramNotification(currentUserRole, messageText || `[Sent a ${mediaType}]`);
+        }, 0);
+      } catch (error) {
+        console.error('Failed to send chat message:', error);
+        throw error;
+      }
     }
 
     function sendTelegramNotification(sender, messageText) {
@@ -1595,12 +1731,7 @@
           text: payloadText,
           parse_mode: 'Markdown'
         })
-      })
-      .then(async (response) => {
-        const resData = await response.json();
-        if (!response.ok || !resData.ok) console.warn("Telegram warning:", resData);
-      })
-      .catch(err => {
+      }).catch(err => {
         console.warn("Telegram request bypassed on connection lag:", err);
       });
     }
