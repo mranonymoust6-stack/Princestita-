@@ -1321,7 +1321,7 @@
       if (window.__chatFeedInitializing) return;
       window.__chatFeedInitializing = true;
 
-      const INITIAL_BATCH_SIZE = 5000;
+      const INITIAL_BATCH_SIZEVIEW 1500;
 
       // Keep the existing loader element while clearing old message elements.
       chatContainer.replaceChildren();
@@ -1360,7 +1360,7 @@
             });
           }
 
-          // Fewer than 5000 means the initial query reached the beginning.
+          // Fewer than 1500 means the initial query reached the beginning.
           allOlderLoaded = keys.length < INITIAL_BATCH_SIZE;
 
           // Mark complete before attaching the listener. Existing children
