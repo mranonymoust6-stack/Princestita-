@@ -174,17 +174,17 @@
       .app-container { height: 94vh; border-radius: 28px; box-shadow: 0 0 50px var(--neon-glow); }
     }
 
-    /* COMPACT & HORIZONTAL STABLE HEADER */
+    /* RESTRUCTURED COMPACT HEADER */
     .chat-header {
-      padding: 8px 12px;
+      padding: 10px 14px;
       background: rgba(7, 5, 13, 0.95);
       border-bottom: 1px solid var(--glass-border);
       display: flex; flex-direction: column;
-      gap: 4px; flex-shrink: 0; position: relative;
+      gap: 6px; flex-shrink: 0; position: relative;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .header-main-row {
+    .header-top-row {
       display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;
     }
 
@@ -200,7 +200,7 @@
       display: flex; align-items: center; gap: 6px; min-width: 0; width: 100%;
     }
     .user-details h2 {
-      font-size: 0.9rem; color: var(--gold-accent); font-family: 'Cinzel', serif;
+      font-size: 0.95rem; color: var(--gold-accent); font-family: 'Cinzel', serif;
       font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       flex-shrink: 0;
     }
@@ -210,8 +210,57 @@
     .chat-header.expanded .collapse-chevron { transform: rotate(180deg); }
 
     .presence-text {
-      font-size: 0.7rem; color: #a7f3d0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.72rem; color: #a7f3d0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+
+    .header-quick-actions {
+      display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+    }
+
+    .call-btn {
+      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      border: none; color: #fff; padding: 5px 10px; border-radius: 16px;
+      font-weight: 600; font-size: 0.72rem; cursor: pointer;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); white-space: nowrap;
+    }
+
+    .kiss-btn {
+      background: linear-gradient(135deg, var(--accent-pink), #be185d);
+      border: none; color: #fff; padding: 5px 10px; border-radius: 16px;
+      font-weight: 600; font-size: 0.72rem; cursor: pointer;
+      box-shadow: 0 0 12px rgba(255, 79, 154, 0.5); white-space: nowrap;
+    }
+
+    /* HEADER BOTTOM ROW FOR METRICS & PRIVATE PICS */
+    .header-bottom-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;
+      padding-top: 2px;
+    }
+
+    .metrics-stack {
+      display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+    }
+
+    .xp-pill {
+      background: rgba(216, 181, 106, 0.15); border: 1px solid var(--gold-accent);
+      color: var(--gold-accent); padding: 2px 8px; border-radius: 16px;
+      font-size: 0.68rem; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+    }
+
+    .weather-corner-widget {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border);
+      padding: 2px 8px; border-radius: 16px; font-size: 0.68rem; color: #f1f5f9; white-space: nowrap;
+    }
+
+    .private-pics-btn {
+      background: linear-gradient(135deg, var(--neon-primary), var(--accent-pink));
+      border: 1px solid var(--glass-border); color: #fff; padding: 5px 12px; border-radius: 16px;
+      font-weight: 600; font-size: 0.7rem; cursor: pointer; text-decoration: none;
+      box-shadow: 0 0 10px rgba(112, 61, 180, 0.4); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+      transition: transform 0.2s;
+    }
+    .private-pics-btn:active { transform: scale(0.95); }
     
     /* COLLAPSIBLE EXPANDED DRAWER */
     .header-expandable-drawer {
@@ -222,57 +271,19 @@
       padding-top: 0px;
     }
     .chat-header.expanded .header-expandable-drawer {
-      max-height: 120px; opacity: 1;
+      max-height: 90px; opacity: 1;
       border-top: 1px solid rgba(168, 117, 232, 0.15);
-      padding-top: 4px;
+      padding-top: 6px;
     }
 
-    .global-status { font-size: 0.7rem; color: var(--soft-indigo); font-style: italic; line-height: 1.2; word-break: break-word; }
-    .own-status-display { font-size: 0.65rem; color: #cbd5e1; line-height: 1.2; word-break: break-word; opacity: 0.95; }
+    .global-status { font-size: 0.72rem; color: var(--soft-indigo); font-style: italic; line-height: 1.2; word-break: break-word; }
+    .own-status-display { font-size: 0.68rem; color: #cbd5e1; line-height: 1.2; word-break: break-word; opacity: 0.95; }
 
     .set-status-action {
-      font-size: 0.65rem; color: var(--accent-pink); cursor: pointer;
+      font-size: 0.68rem; color: var(--accent-pink); cursor: pointer;
       text-decoration: underline; display: inline-flex; align-items: center; gap: 2px;
       margin-top: 1px; opacity: 0.9; line-height: 1.2; width: fit-content;
     }
-
-    .header-actions { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; flex-shrink: 0; }
-    .header-buttons-row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-
-    .weather-corner-widget {
-      display: flex; align-items: center; gap: 3px;
-      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border);
-      padding: 2px 6px; border-radius: 12px; font-size: 0.65rem; color: #f1f5f9; white-space: nowrap;
-    }
-
-    .xp-pill {
-      background: rgba(216, 181, 106, 0.15); border: 1px solid var(--gold-accent);
-      color: var(--gold-accent); padding: 3px 6px; border-radius: 16px;
-      font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; gap: 2px; white-space: nowrap;
-    }
-
-    .call-btn {
-      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-      border: none; color: #fff; padding: 4px 8px; border-radius: 16px;
-      font-weight: 600; font-size: 0.68rem; cursor: pointer;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); white-space: nowrap;
-    }
-
-    .kiss-btn {
-      background: linear-gradient(135deg, var(--accent-pink), #be185d);
-      border: none; color: #fff; padding: 4px 8px; border-radius: 16px;
-      font-weight: 600; font-size: 0.68rem; cursor: pointer;
-      box-shadow: 0 0 12px rgba(255, 79, 154, 0.5); white-space: nowrap;
-    }
-
-    .private-pics-btn {
-      background: linear-gradient(135deg, var(--neon-primary), var(--accent-pink));
-      border: 1px solid var(--glass-border); color: #fff; padding: 3px 8px; border-radius: 16px;
-      font-weight: 600; font-size: 0.65rem; cursor: pointer; text-decoration: none;
-      box-shadow: 0 0 10px rgba(112, 61, 180, 0.4); display: inline-flex; align-items: center; gap: 2px; white-space: nowrap;
-      transition: transform 0.2s;
-    }
-    .private-pics-btn:active { transform: scale(0.95); }
 
     /* VIEWPORT PANELS */
     .viewport-content { flex: 1; overflow-y: auto; position: relative; display: flex; flex-direction: column; }
@@ -338,26 +349,10 @@
       background: rgba(255, 79, 154, 0.35); transition: width 0.1s linear; pointer-events: none;
     }
 
-    /* CHAT STREAM PANEL WITH FULL-CHAT BLOOMING FLOWERS */
+    /* CHAT STREAM PANEL CLEANED OF STICKER-LIKE FLORA BACKGROUND */
     .chat-messages {
       flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
       position: relative; z-index: 2;
-    }
-
-    .chat-floral-bg-layer {
-      position: absolute; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; height: 100%; width: 100%;
-    }
-
-    .blooming-flora {
-      position: absolute; font-size: 1.5rem; opacity: 0.24;
-      animation: floraBloomPulse 6s ease-in-out infinite;
-      filter: drop-shadow(0 0 5px var(--accent-pink));
-      pointer-events: none;
-    }
-
-    @keyframes floraBloomPulse {
-      0%, 100% { transform: scale(0.8) rotate(-8deg); opacity: 0.16; }
-      50% { transform: scale(1.2) rotate(12deg); opacity: 0.35; }
     }
 
     .history-loader-bar {
@@ -389,10 +384,13 @@
     }
 
     .msg-wifey-ribbon-tag { font-size: 0.85rem; margin-right: 4px; vertical-align: middle; }
-    .msg-deleted { font-style: italic; opacity: 0.6; color: var(--text-muted); }
-    .msg-sender { font-size: 0.75rem; font-weight: 700; color: var(--soft-indigo); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .msg-deleted { font-style: italic !important; opacity: 0.6; color: var(--text-muted); }
+    .msg-sender { font-size: 0.75rem; font-weight: 700; color: var(--soft-indigo); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; font-style: normal !important; }
     .msg-time-status-row { display: flex; align-items: center; gap: 6px; }
-    .msg-time { font-size: 0.65rem; color: var(--text-muted); font-weight: 400; }
+    .msg-time { font-size: 0.65rem; color: var(--text-muted); font-weight: 400; font-style: normal !important; }
+
+    /* DEDICATED MESSAGE-TEXT CLASS FOR ITELIC STYLING */
+    .message-text { font-style: italic; }
 
     .chat-media-frame { max-width: 100%; border-radius: 14px; margin-top: 6px; border: 2px solid var(--neon-primary); max-height: 250px; object-fit: contain; }
     .meme-card { max-width: 100%; border-radius: 14px; margin-top: 6px; border: 2px solid var(--glass-border); background: #000; }
@@ -578,9 +576,9 @@
   </div>
 
   <div class="app-container">
-    <!-- COMPACT & HORIZONTAL STABLE HEADER -->
+    <!-- RESTRUCTURED COMPACT HEADER -->
     <div class="chat-header" id="main-chat-header">
-      <div class="header-main-row">
+      <div class="header-top-row">
         <div class="user-info" onclick="toggleHeaderExpansion()">
           <div class="avatar" id="partner-avatar">👑</div>
           <div class="user-details">
@@ -592,21 +590,25 @@
           </div>
         </div>
 
-        <div class="header-actions">
-          <div class="header-buttons-row">
-            <div class="weather-corner-widget" id="weather-corner-widget">
-              <span id="weather-icon">🌙</span>
-              <span id="time-corner-text">00:00</span>
-            </div>
-            <div class="xp-pill"><span id="xp-display">0</span> XP</div>
-            <button class="kiss-btn" id="kiss-action-btn" onclick="triggerKissDanawExplosion()">💋 Kiss</button>
-            <button class="call-btn" onclick="initiateVoiceCall()">📞 Call</button>
-          </div>
-          <!-- PRIVATE PICS BUTTON LINKED TO EXACT FOLDER -->
-          <a href="https://drive.google.com/drive/folders/1i13NY1tpaR8JyQ0QKpcb1dRsBpgT3Ran" target="_blank" rel="noopener noreferrer" class="private-pics-btn">
-            📸 Private Pics
-          </a>
+        <div class="header-quick-actions">
+          <button class="kiss-btn" id="kiss-action-btn" onclick="triggerKissDanawExplosion()">💋 Kiss</button>
+          <button class="call-btn" onclick="initiateVoiceCall()">📞 Call</button>
         </div>
+      </div>
+
+      <!-- HEADER BOTTOM ROW: STACKED METRICS & PRIVATE PICS -->
+      <div class="header-bottom-row">
+        <div class="metrics-stack">
+          <div class="xp-pill"><span id="xp-display">0</span> XP</div>
+          <div class="weather-corner-widget" id="weather-corner-widget">
+            <span id="weather-icon">🌙</span>
+            <span id="time-corner-text">00:00</span>
+          </div>
+        </div>
+        
+        <a href="https://drive.google.com/drive/folders/1i13NY1tpaR8JyQ0QKpcb1dRsBpgT3Ran" target="_blank" rel="noopener noreferrer" class="private-pics-btn">
+          📸 Private Pics
+        </a>
       </div>
 
       <!-- EXPANDABLE DRAWER FOR FULL STATUS & CONTROLS -->
@@ -669,9 +671,6 @@
       <!-- TAB 2: CHAT STREAM -->
       <div class="tab-panel" id="panel-chat">
         <div class="chat-messages" id="chat-stream">
-          <!-- Full-Chat Blooming Garden Flora Background Layer -->
-          <div class="chat-floral-bg-layer" id="chat-floral-container"></div>
-
           <div class="history-loader-bar" id="history-loader-bar">
             <span>✨ Syncing memories...</span>
           </div>
@@ -882,7 +881,6 @@
       if (savedRole === "Mr. Sudip") currentUserRole = "Mr. Sudip";
       
       initLoadingScreenDecorations();
-      initChatBloomingFlora();
       renderStickerPresets();
       initializeChatFeed();
 
@@ -902,23 +900,6 @@
       const header = document.getElementById('main-chat-header');
       if (header) {
         header.classList.toggle('expanded');
-      }
-    }
-
-    function initChatBloomingFlora() {
-      const container = document.getElementById('chat-floral-container');
-      if (!container) return;
-      container.innerHTML = "";
-      const floraList = ['🌸', '💮', '✿', '❀', '🌷', '✨', '🦋'];
-      for (let i = 0; i < 22; i++) {
-        const flora = document.createElement('div');
-        flora.className = 'blooming-flora';
-        flora.style.left = `${Math.random() * 92 + 4}%`;
-        flora.style.top = `${Math.random() * 92 + 4}%`;
-        flora.style.animationDuration = `${Math.random() * 4 + 4}s`;
-        flora.style.animationDelay = `${Math.random() * 3}s`;
-        flora.innerText = floraList[Math.floor(Math.random() * floraList.length)];
-        container.appendChild(flora);
       }
     }
 
@@ -1358,9 +1339,7 @@
 
       const INITIAL_BATCH_SIZE = 20;
 
-      const floralLayer = document.getElementById('chat-floral-container');
       chatContainer.replaceChildren();
-      if (floralLayer) chatContainer.appendChild(floralLayer);
       chatContainer.appendChild(loaderBar);
       loaderBar.classList.remove('active');
 
@@ -1548,13 +1527,12 @@
     function updateMessageElementUI(div, key, msg) {
       const isSudip = msg.sender === 'Mr. Sudip';
       const isWifey = msg.sender === 'Mrs. Sudip';
-      const isOwnMessage = msg.sender === currentUserRole;
 
       div.className = `msg-bubble ${isSudip ? 'msg-sudip' : 'msg-wifey'}`;
       div.onclick = () => openDeleteModal(key);
 
       if (msg.deletedForEveryone) {
-        div.innerHTML = `<div class="msg-sender"><span>${escapeHTML(msg.sender)}</span></div><div class="msg-body msg-deleted">🚫 This message was deleted</div>`;
+        div.innerHTML = `<div class="msg-sender"><span>${escapeHTML(msg.sender)}</span></div><div class="msg-body msg-deleted message-text">🚫 This message was deleted</div>`;
         return;
       }
 
@@ -1562,7 +1540,7 @@
       const safeText = escapeHTML(msg.text || '');
       let formattedText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--soft-indigo); text-decoration: underline;">$1</a>');
 
-      let bodyContent = msg.text ? `<div class="msg-body">${formattedText}</div>` : '';
+      let bodyContent = msg.text ? `<div class="msg-body message-text">${formattedText}</div>` : '';
 
       if (msg.mediaType === 'audio' && msg.media) {
         bodyContent += `<audio src="${msg.media}" controls class="chat-audio-player" preload="metadata"></audio>`;
