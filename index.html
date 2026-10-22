@@ -222,7 +222,7 @@
       padding-top: 0px;
     }
     .chat-header.expanded .header-expandable-drawer {
-      max-height: 110px; opacity: 1;
+      max-height: 120px; opacity: 1;
       border-top: 1px solid rgba(168, 117, 232, 0.15);
       padding-top: 4px;
     }
@@ -345,19 +345,19 @@
     }
 
     .chat-floral-bg-layer {
-      position: absolute; inset: 0; pointer-events: none; z-index: -1; overflow: hidden;
+      position: absolute; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; height: 100%; width: 100%;
     }
 
     .blooming-flora {
-      position: absolute; font-size: 1.5rem; opacity: 0.22;
+      position: absolute; font-size: 1.5rem; opacity: 0.24;
       animation: floraBloomPulse 6s ease-in-out infinite;
       filter: drop-shadow(0 0 5px var(--accent-pink));
       pointer-events: none;
     }
 
     @keyframes floraBloomPulse {
-      0%, 100% { transform: scale(0.8) rotate(-8deg); opacity: 0.14; }
-      50% { transform: scale(1.2) rotate(12deg); opacity: 0.32; }
+      0%, 100% { transform: scale(0.8) rotate(-8deg); opacity: 0.16; }
+      50% { transform: scale(1.2) rotate(12deg); opacity: 0.35; }
     }
 
     .history-loader-bar {
@@ -909,8 +909,8 @@
       const container = document.getElementById('chat-floral-container');
       if (!container) return;
       container.innerHTML = "";
-      const floraList = ['🌸', '💮', '✿', '❀', '🌷', '✨'];
-      for (let i = 0; i < 18; i++) {
+      const floraList = ['🌸', '💮', '✿', '❀', '🌷', '✨', '🦋'];
+      for (let i = 0; i < 22; i++) {
         const flora = document.createElement('div');
         flora.className = 'blooming-flora';
         flora.style.left = `${Math.random() * 92 + 4}%`;
@@ -1356,7 +1356,7 @@
       if (window.__chatFeedInitializing) return;
       window.__chatFeedInitializing = true;
 
-      const INITIAL_BATCH_SIZE 50;
+      const INITIAL_BATCH_SIZE = 20;
 
       const floralLayer = document.getElementById('chat-floral-container');
       chatContainer.replaceChildren();
