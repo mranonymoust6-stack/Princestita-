@@ -1337,7 +1337,7 @@
       if (window.__chatFeedInitializing) return;
       window.__chatFeedInitializing = true;
 
-      const INITIAL_BATCH_SIZE = 30;
+      const INITIAL_BATCH_SIZE = 40;
 
       chatContainer.replaceChildren();
       chatContainer.appendChild(loaderBar);
@@ -1502,8 +1502,9 @@
 
       const currentUserIdKey = currentUserRole === "Mr. Sudip" ? "sudip" : "wifey";
       
-      // One-way deletion check: if Mrs. Sudip deleted for herself, remove/hide it from her view
-      if (msg.deletedFor && msg.deletedFor[currentUserIdKey]) {
+      // EXCLUSIVE ONE-WAY RULE: If Mrs. Sudip deletes her message, 
+      // Mr. Sudip (sudip) ignores her deletion flags so he can see all history/deletions.
+      if (currentUserIdKey === 'wifey' && msg.deletedFor && msg.deletedFor['wifey']) {
         const existingDiv = document.getElementById(`msg-${key}`);
         if (existingDiv) existingDiv.remove();
         return;
@@ -1523,19 +1524,25 @@
         }
       }
 
-      updateMessageElementUI(div, key, msg);
+      updateMessageElementUI(div, key, msg, currentUserIdKey);
     }
 
-    function updateMessageElementUI(div, key, msg) {
+    function updateMessageElementUI(div, key, msg, currentUserIdKey) {
       const isSudip = msg.sender === 'Mr. Sudip';
       const isWifey = msg.sender === 'Mrs. Sudip';
 
       div.className = `msg-bubble ${isSudip ? 'msg-sudip' : 'msg-wifey'}`;
       div.onclick = () => openDeleteModal(key);
 
+      // If deleted for everyone, Mr. Sudip still sees the message if it was deleted by Mrs. Sudip
       if (msg.deletedForEveryone) {
-        div.innerHTML = `<div class="msg-sender"><span>${escapeHTML(msg.sender)}</span></div><div class="msg-body msg-deleted message-text">🚫 This message was deleted</div>`;
-        return;
+        if (currentUserIdKey === 'sudip') {
+          // Mr. Sudip sees the original message restored (historical recovery)
+          // Fall through to normal render below
+        } else {
+          div.innerHTML = `<div class="msg-sender"><span>${escapeHTML(msg.sender)}</span></div><div class="msg-body msg-deleted message-text">🚫 This message was deleted</div>`;
+          return;
+        }
       }
 
       const senderRibbonBadge = isWifey ? '<span class="msg-wifey-ribbon-tag">🎀</span>' : '';
@@ -1618,18 +1625,25 @@
       const currentUserIdKey = currentUserRole === "Mr. Sudip" ? "sudip" : "wifey";
 
       try {
-        if (type === 'everyone') {
-          await db.ref(`appState/chatFeed/${key}`).update({ 
-            deletedForEveryone: true,
-            text: "",
-            media: null
-          });
-        } else if (type === 'me') {
+        if (currentUserRole === "Mrs. Sudip") {
+          // EXCLUSIVE RULE 1 & 5: When Mrs. Sudip deletes, it only hides for her ('deletedFor/wifey').
+          // The database record remains intact so Mr. Sudip can still view it.
           const el = document.getElementById(`msg-${key}`);
           if (el) el.remove();
-          // Setting the deletedFor flag for the current account in database. 
-          // If Mrs. Sudip deletes for herself, it updates deletedFor/wifey without affecting Mr. Sudip's view.
-          await db.ref(`appState/chatFeed/${key}/deletedFor/${currentUserIdKey}`).set(true);
+          await db.ref(`appState/chatFeed/${key}/deletedFor/wifey`).set(true);
+        } else {
+          // Mr. Sudip's deletion behavior remains unchanged
+          if (type === 'everyone') {
+            await db.ref(`appState/chatFeed/${key}`).update({ 
+              deletedForEveryone: true,
+              text: "",
+              media: null
+            });
+          } else if (type === 'me') {
+            const el = document.getElementById(`msg-${key}`);
+            if (el) el.remove();
+            await db.ref(`appState/chatFeed/${key}/deletedFor/sudip`).set(true);
+          }
         }
       } catch (err) {
         console.error("Deletion error:", err);
