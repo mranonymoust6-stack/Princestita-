@@ -1337,7 +1337,7 @@
       if (window.__chatFeedInitializing) return;
       window.__chatFeedInitializing = true;
 
-      const INITIAL_BATCH_SIZE = 20;
+      const INITIAL_BATCH_SIZE = 30;
 
       chatContainer.replaceChildren();
       chatContainer.appendChild(loaderBar);
@@ -1501,6 +1501,8 @@
       if (!chatContainer || !msg) return;
 
       const currentUserIdKey = currentUserRole === "Mr. Sudip" ? "sudip" : "wifey";
+      
+      // One-way deletion check: if Mrs. Sudip deleted for herself, remove/hide it from her view
       if (msg.deletedFor && msg.deletedFor[currentUserIdKey]) {
         const existingDiv = document.getElementById(`msg-${key}`);
         if (existingDiv) existingDiv.remove();
@@ -1625,6 +1627,8 @@
         } else if (type === 'me') {
           const el = document.getElementById(`msg-${key}`);
           if (el) el.remove();
+          // Setting the deletedFor flag for the current account in database. 
+          // If Mrs. Sudip deletes for herself, it updates deletedFor/wifey without affecting Mr. Sudip's view.
           await db.ref(`appState/chatFeed/${key}/deletedFor/${currentUserIdKey}`).set(true);
         }
       } catch (err) {
@@ -1724,4 +1728,3 @@
   </script>
 </body>
 </html>
-
