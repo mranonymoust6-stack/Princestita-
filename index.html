@@ -539,6 +539,45 @@
       20% { opacity: 1; }
       100% { transform: scale(2.0) translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
     }
+
+    /* ROMANTIC DARK LETTER MODAL STYLES */
+    .letter-modal {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(16px);
+      z-index: 1000; display: flex; justify-content: center; align-items: center; padding: 16px;
+      opacity: 0; pointer-events: none; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .letter-modal.open { opacity: 1; pointer-events: auto; }
+
+    .letter-paper-card {
+      background: #1a0b1c; border: 2px solid #5c1d39;
+      border-radius: 20px; padding: 2.2rem 1.8rem; max-width: 440px; width: 100%;
+      box-shadow: 0 0 60px rgba(139, 0, 65, 0.4), inset 0 0 30px rgba(75, 0, 130, 0.2);
+      position: relative; overflow: hidden; transform: scale(0.92) translateY(20px);
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .letter-modal.open .letter-paper-card { transform: scale(1) translateY(0); }
+
+    .letter-paper-card::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(74, 10, 34, 0.25) 0%, rgba(10, 5, 13, 0.95) 100%);
+      pointer-events: none; z-index: 1;
+    }
+
+    .letter-content-inner { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 12px; }
+    .letter-floral-header { font-size: 1.8rem; text-align: center; filter: drop-shadow(0 0 8px #ff4f9a); }
+    
+    .letter-scroll-area {
+      max-height: 52vh; overflow-y: auto; padding-right: 6px; scrollbar-width: thin; scrollbar-color: #5c1d39 #1a0b1c;
+    }
+    .letter-scroll-area::-webkit-scrollbar { width: 4px; }
+    .letter-scroll-area::-webkit-scrollbar-thumb { background: #5c1d39; border-radius: 4px; }
+
+    .letter-salutation { font-family: 'Cinzel', serif; color: #d8b56a; font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .letter-body-text { font-family: 'Cinzel', serif; font-size: 0.88rem; color: #f3e8ff; line-height: 1.6; font-style: italic; white-space: pre-line; }
+    .letter-signoff { font-family: 'Cinzel', serif; color: #ff4f9a; font-size: 0.9rem; font-weight: 700; margin-top: 10px; font-style: italic; }
+
+    .letter-actions-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; z-index: 2; }
   </style>
 </head>
 <body>
@@ -750,6 +789,41 @@
       <a class="nav-item" onclick="switchTab('chat', this)"><span class="nav-icon">💬</span><span>Chat</span></a>
       <a class="nav-item" onclick="switchTab('watch2gether', this)"><span class="nav-icon">🎬</span><span>Watch</span></a>
       <a class="nav-item" onclick="switchTab('play2gether', this)"><span class="nav-icon">🎮</span><span>Play</span></a>
+    </div>
+  </div>
+
+  <!-- DARK ROMANTIC LETTER MODAL -->
+  <div class="letter-modal" id="dark-letter-modal">
+    <div class="letter-paper-card">
+      <div class="letter-content-inner">
+        <div class="letter-floral-header">🌹 🖤 🌹</div>
+        <div class="letter-scroll-area">
+          <div class="letter-salutation">To My Princess,</div>
+          <div class="letter-body-text">My Princess,
+
+Yesterday, I let my frustration speak when my heart should have spoken instead.
+
+My friend was in pain, and I was worried. When you weren't replying, my emotions got the better of me. But none of that gives me the right to hurt you.
+
+I regret it. More than my pride will ever admit.
+
+You are my favourite weakness, the one soul I never want to lose in the darkness of this world.
+
+I may have a thousand storms inside me, Princess, but you were never meant to become one of them.
+
+Remember this:
+
+I don't need a perfect world. I only want my world to have you in it.
+
+Forgive me, beautiful. Even my darkest nights feel incomplete without you.</div>
+          <div class="letter-signoff">Forever yours,<br>Your man. 🖤</div>
+        </div>
+
+        <div class="letter-actions-stack">
+          <button class="btn-primary" style="background: linear-gradient(135deg, #8b0041, #ff4f9a); width: 100%; padding: 12px; font-size: 0.9rem;" onclick="handleLetterAction('ok')">OK, My Love 🖤</button>
+          <button class="btn-secondary" style="border: 1px solid #5c1d39; color: #a8a29e; width: 100%; padding: 10px; font-size: 0.8rem;" onclick="handleLetterAction('never')">Never Show Again</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1071,7 +1145,29 @@
         setupPresenceSystem();
         setupTypingSystem();
         listenForStatusUpdates();
+        checkAndShowDarkLetter();
       }, 800);
+    }
+
+    function checkAndShowDarkLetter() {
+      if (currentUserRole !== "Mrs. Sudip") return;
+      db.ref('appState/darkLetterDismissed/wifey').once('value').then((snap) => {
+        const dismissed = snap.val();
+        if (!dismissed) {
+          setTimeout(() => {
+            document.getElementById('dark-letter-modal').classList.add('open');
+            if (window.confetti) confetti({ particleCount: 40, spread: 60, origin: { y: 0.4 } });
+          }, 800);
+        }
+      });
+    }
+
+    async function handleLetterAction(action) {
+      const modal = document.getElementById('dark-letter-modal');
+      modal.classList.remove('open');
+      if (action === 'never') {
+        await db.ref('appState/darkLetterDismissed/wifey').set(true);
+      }
     }
 
     function updateHeaderInfo() {
@@ -1337,7 +1433,7 @@
       if (window.__chatFeedInitializing) return;
       window.__chatFeedInitializing = true;
 
-      const INITIAL_BATCH_SIZE = 40;
+      const INITIAL_BATCH_SIZE = 50;
 
       chatContainer.replaceChildren();
       chatContainer.appendChild(loaderBar);
@@ -1411,7 +1507,7 @@
       db.ref('appState/chatFeed')
         .orderByKey()
         .endAt(cursorKey)
-        .limitToLast(21)
+        .limitToLast(51)
         .once('value')
         .then((snapshot) => {
           const val = snapshot.val() || {};
@@ -1434,7 +1530,7 @@
           }
 
           oldestLoadedKey = olderKeys[0];
-          if (olderKeys.length < 20) allOlderLoaded = true;
+          if (olderKeys.length < 50) allOlderLoaded = true;
 
           const newScrollHeight = chatContainer.scrollHeight;
           chatContainer.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight);
@@ -1502,8 +1598,8 @@
 
       const currentUserIdKey = currentUserRole === "Mr. Sudip" ? "sudip" : "wifey";
       
-      // EXCLUSIVE ONE-WAY RULE: If Mrs. Sudip deletes her message, 
-      // Mr. Sudip (sudip) ignores her deletion flags so he can see all history/deletions.
+      // CRITICAL FIX: IF USER IS MRS. SUDIP AND SHE DELETED THIS MESSAGE FOR HERSELF, HIDE IT.
+      // IF USER IS MR. SUDIP, IGNORE ALL OF MRS. SUDIP'S DELETION FLAGS SO HE ALWAYS SEES THE ORIGINAL MESSAGE.
       if (currentUserIdKey === 'wifey' && msg.deletedFor && msg.deletedFor['wifey']) {
         const existingDiv = document.getElementById(`msg-${key}`);
         if (existingDiv) existingDiv.remove();
@@ -1534,15 +1630,10 @@
       div.className = `msg-bubble ${isSudip ? 'msg-sudip' : 'msg-wifey'}`;
       div.onclick = () => openDeleteModal(key);
 
-      // If deleted for everyone, Mr. Sudip still sees the message if it was deleted by Mrs. Sudip
-      if (msg.deletedForEveryone) {
-        if (currentUserIdKey === 'sudip') {
-          // Mr. Sudip sees the original message restored (historical recovery)
-          // Fall through to normal render below
-        } else {
-          div.innerHTML = `<div class="msg-sender"><span>${escapeHTML(msg.sender)}</span></div><div class="msg-body msg-deleted message-text">🚫 This message was deleted</div>`;
-          return;
-        }
+      // RESTORATION LOGIC FOR MR. SUDIP: Even if deleted for everyone or soft-deleted by wifey, Mr. Sudip sees the actual original message content
+      if (msg.deletedForEveryone && currentUserIdKey !== 'sudip') {
+        div.innerHTML = `<div class="msg-sender"><span>${escapeHTML(msg.sender)}</span></div><div class="msg-body msg-deleted message-text">🚫 This message was deleted</div>`;
+        return;
       }
 
       const senderRibbonBadge = isWifey ? '<span class="msg-wifey-ribbon-tag">🎀</span>' : '';
@@ -1622,17 +1713,16 @@
     async function confirmDeleteMsg(type) {
       if (!selectedMsgKeyForDelete) return;
       const key = selectedMsgKeyForDelete;
-      const currentUserIdKey = currentUserRole === "Mr. Sudip" ? "sudip" : "wifey";
 
       try {
         if (currentUserRole === "Mrs. Sudip") {
-          // EXCLUSIVE RULE 1 & 5: When Mrs. Sudip deletes, it only hides for her ('deletedFor/wifey').
-          // The database record remains intact so Mr. Sudip can still view it.
+          // MRS. SUDIP DELETION: Soft hides only for her in database under 'deletedFor/wifey'.
+          // Original database record and content remain intact for Mr. Sudip.
           const el = document.getElementById(`msg-${key}`);
           if (el) el.remove();
           await db.ref(`appState/chatFeed/${key}/deletedFor/wifey`).set(true);
         } else {
-          // Mr. Sudip's deletion behavior remains unchanged
+          // MR. SUDIP DELETION: Standard existing behavior
           if (type === 'everyone') {
             await db.ref(`appState/chatFeed/${key}`).update({ 
               deletedForEveryone: true,
