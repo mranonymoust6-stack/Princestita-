@@ -426,6 +426,13 @@
       align-items: flex-start;
     }
 
+    .wifey-top-crown {
+      font-size: 0.9rem;
+      line-height: 1.1;
+      margin-bottom: 3px;
+      padding: 0 4px;
+    }
+
     .msg-bubble {
       padding: 9px 13px;
       border-radius: 18px;
@@ -917,9 +924,14 @@
       <div class="input-row">
         <button class="tool-icon-btn" onclick="toggleEmojiDrawer()" title="Emojis" aria-label="Emojis">😊</button>
 
-        <label class="tool-icon-btn" title="Attach Photo or Audio" aria-label="Attach File">
-          📎
-          <input type="file" id="media-file-input" accept="image/*,audio/*" style="display:none;" onchange="handleAttachment(event)">
+        <label class="tool-icon-btn" title="Record or Send Audio" aria-label="Voice Recorder / Audio">
+          🎵
+          <input type="file" id="audio-recorder-input" accept="audio/*" capture="microphone" style="display:none;" onchange="handleAudioAttachment(event)">
+        </label>
+
+        <label class="tool-icon-btn" title="Attach Photo" aria-label="Attach Photo">
+          📷
+          <input type="file" id="image-file-input" accept="image/*" style="display:none;" onchange="handleImageAttachment(event)">
         </label>
 
         <input
@@ -1194,7 +1206,6 @@
       const INITIAL_LIMIT = 25;
       const feedQuery = db.ref('appState/chatFeed').orderByKey().limitToLast(INITIAL_LIMIT);
 
-      // Fast initial snapshot for quick first paint
       feedQuery.once('value').then((snapshot) => {
         const val = snapshot.val() || {};
         const keys = Object.keys(val).sort();
@@ -1229,7 +1240,6 @@
       if (listenersAttached) return;
       listenersAttached = true;
 
-      // Live listener streams every new message immediately without needing refresh
       feedQuery.on('child_added', (snapshot) => {
         const key = snapshot.key;
         const msg = snapshot.val();
@@ -1373,6 +1383,7 @@
       }
 
       const isSelf = msg.sender === currentUserRole;
+      const isWifeyMsg = msg.sender === 'Mrs. Sudip';
       let row = document.getElementById(`msg-${key}`);
 
       if (!row) {
@@ -1392,8 +1403,11 @@
 
       row.className = `msg-row ${isSelf ? 'self' : 'partner'}`;
 
+      const topBadgeHTML = isWifeyMsg ? `<div class="wifey-top-crown">🎀👸</div>` : '';
+
       if (msg.deletedForEveryone) {
         row.innerHTML = `
+          ${topBadgeHTML}
           <div class="msg-bubble">
             <div class="msg-deleted-text">🚫 This message was deleted</div>
             <div class="msg-meta"><span>${escapeHTML(formatMsgTime(msg))}</span></div>
@@ -1434,6 +1448,7 @@
       const previewSnippet = rawText || (msg.mediaType === 'audio' ? '🎵 Voice/Audio' : '📷 Photo');
 
       row.innerHTML = `
+        ${topBadgeHTML}
         <div class="msg-bubble">
           ${replyHTML}
           ${rawText ? `<div class="msg-text">${linkedText}</div>` : ''}
@@ -1503,14 +1518,23 @@
       }
     }
 
-    function handleAttachment(event) {
+    function handleAudioAttachment(event) {
       const file = event.target.files[0];
       if (!file) return;
-
-      const isAudio = file.type.startsWith('audio/');
       const reader = new FileReader();
       reader.onload = (e) => {
-        sendMessage('', e.target.result, isAudio ? 'audio' : 'image');
+        sendMessage('🎵 Voice message', e.target.result, 'audio');
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function handleImageAttachment(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        sendMessage('', e.target.result, 'image');
       };
       reader.readAsDataURL(file);
       event.target.value = '';
