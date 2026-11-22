@@ -50,6 +50,50 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+    }
+
+    /* SUBTLE GARDEN AMBIENT LAYER (BUTTERFLIES, WINGS, FLOWERS) */
+    .garden-ambient-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .garden-float-item {
+      position: absolute;
+      opacity: 0.24;
+      will-change: transform;
+      animation: gentleDrift var(--dur, 18s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .garden-butterfly {
+      font-size: var(--size, 1.15rem);
+      display: inline-block;
+      animation: wingFlutter 0.55s ease-in-out infinite alternate;
+    }
+
+    @keyframes wingFlutter {
+      0% { transform: scaleX(1) rotate(-4deg); }
+      100% { transform: scaleX(0.68) rotate(5deg); }
+    }
+
+    @keyframes gentleDrift {
+      0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+      }
+      33% {
+        transform: translate3d(var(--dx1, 24px), var(--dy1, -35px), 0) rotate(6deg);
+      }
+      66% {
+        transform: translate3d(var(--dx2, -18px), var(--dy2, -70px), 0) rotate(-5deg);
+      }
+      100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+      }
     }
 
     /* GATEWAY OVERLAY */
@@ -80,6 +124,8 @@
       width: 100%;
       text-align: center;
       box-shadow: var(--shadow-soft);
+      position: relative;
+      z-index: 2;
     }
 
     .garden-emblem {
@@ -161,11 +207,12 @@
       max-width: 560px;
       height: 100vh;
       height: 100dvh;
-      background: var(--bg-cream);
+      background: rgba(252, 251, 248, 0.96);
       display: flex;
       flex-direction: column;
       position: relative;
       overflow: hidden;
+      z-index: 5;
     }
 
     @media (min-width: 580px) {
@@ -179,7 +226,7 @@
 
     /* CHAT HEADER */
     .chat-header {
-      background: rgba(252, 251, 248, 0.96);
+      background: rgba(252, 251, 248, 0.97);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-subtle);
       padding: 10px 16px;
@@ -323,19 +370,20 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      background-color: var(--bg-chat);
+      background-color: rgba(247, 249, 245, 0.88);
       background-image:
-        radial-gradient(circle at 15% 20%, rgba(46, 111, 64, 0.04) 0%, transparent 45%),
-        radial-gradient(circle at 85% 75%, rgba(200, 109, 123, 0.04) 0%, transparent 45%);
+        radial-gradient(circle at 15% 20%, rgba(46, 111, 64, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(200, 109, 123, 0.05) 0%, transparent 45%);
       scroll-behavior: smooth;
       position: relative;
+      z-index: 2;
     }
 
     .history-banner {
       align-self: center;
       font-size: 0.75rem;
       color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--border-subtle);
       padding: 5px 12px;
       border-radius: 20px;
@@ -776,6 +824,20 @@
 </head>
 <body>
 
+  <!-- SUBTLE GARDEN AMBIENT ELEMENTS (BUTTERFLIES, SMALL WINGS, FLOWERS) -->
+  <div class="garden-ambient-layer" aria-hidden="true">
+    <div class="garden-float-item" style="top: 12%; left: 10%; --dur: 20s; --delay: 0s; --dx1: 30px; --dy1: -22px; --dx2: -15px; --dy2: 18px;">
+      <span class="garden-butterfly" style="--size: 1.15rem;">🦋</span>
+    </div>
+    <div class="garden-float-item" style="top: 68%; left: 82%; --dur: 24s; --delay: -4s; --dx1: -28px; --dy1: -26px; --dx2: 12px; --dy2: 14px;">
+      <span class="garden-butterfly" style="--size: 1.05rem;">🦋</span>
+    </div>
+    <div class="garden-float-item" style="top: 24%; left: 85%; font-size: 1.05rem; --dur: 22s; --delay: -2s; --dx1: -20px; --dy1: 25px; --dx2: 10px; --dy2: -15px;">🌸</div>
+    <div class="garden-float-item" style="top: 78%; left: 14%; font-size: 1rem; --dur: 26s; --delay: -7s; --dx1: 22px; --dy1: -28px; --dx2: -12px; --dy2: 10px;">🌺</div>
+    <div class="garden-float-item" style="top: 44%; left: 7%; font-size: 0.95rem; --dur: 19s; --delay: -5s; --dx1: 18px; --dy1: 20px; --dx2: -14px; --dy2: -12px;">🍃</div>
+    <div class="garden-float-item" style="top: 35%; left: 91%; font-size: 0.9rem; --dur: 21s; --delay: -9s; --dx1: -16px; --dy1: -20px; --dx2: 14px; --dy2: 16px;">🌼</div>
+  </div>
+
   <!-- ROLE ENTRY GATEWAY -->
   <div class="gateway-overlay" id="gateway">
     <div class="gateway-card">
@@ -825,7 +887,7 @@
     <!-- CHAT BODY -->
     <main class="chat-body" id="chat-stream">
       <div class="history-banner" id="history-loader">Loading earlier memories...</div>
-      <div class="empty-state" id="empty-chat-hint">Loading your private garden conversation... 🌿</div>
+      <div class="empty-state" id="empty-chat-hint">Opening your garden chat... 🌿</div>
 
       <!-- LIVE TYPING BUBBLE -->
       <div class="typing-bubble" id="typing-indicator-bubble">
@@ -945,7 +1007,6 @@
     let oldestLoadedKey = null;
     let isFetchingOlder = false;
     let allOlderLoaded = false;
-    let isInitialLoadComplete = false;
     let listenersAttached = false;
 
     let presenceInterval = null;
@@ -1056,13 +1117,11 @@
         }
       }, 15000);
 
-      // Listen to partner presence
       db.ref(`appState/presence/${partnerKey}`).on('value', (snap) => {
         partnerPresenceCache = snap.val();
         renderPresenceUI();
       });
 
-      // Listen to partner typing status
       db.ref(`appState/typing/${partnerKey}`).on('value', (snap) => {
         const data = snap.val();
         partnerTypingActive = Boolean(data && data.isTyping && (Date.now() - (data.timestamp || 0) < 5000));
@@ -1128,76 +1187,73 @@
     }
 
     // =========================================================
-    // 5. REAL-TIME MESSAGING, HISTORY, READ RECEIPTS & REPLIES
+    // 5. FAST INITIAL LOAD + TRUE LIVE STREAMING
     // =========================================================
     function initRealtimeChat() {
-      const chatStream = document.getElementById('chat-stream');
       const emptyHint = document.getElementById('empty-chat-hint');
-      const INITIAL_LIMIT = 60;
+      const INITIAL_LIMIT = 25;
+      const feedQuery = db.ref('appState/chatFeed').orderByKey().limitToLast(INITIAL_LIMIT);
 
-      db.ref('appState/chatFeed')
-        .orderByKey()
-        .limitToLast(INITIAL_LIMIT)
-        .once('value')
-        .then((snapshot) => {
-          const val = snapshot.val() || {};
-          const keys = Object.keys(val).sort();
+      // Fast initial snapshot for quick first paint
+      feedQuery.once('value').then((snapshot) => {
+        const val = snapshot.val() || {};
+        const keys = Object.keys(val).sort();
 
-          if (keys.length === 0) {
-            emptyHint.textContent = "No messages yet. Say hello in The Garden 🌿";
-            allOlderLoaded = true;
-          } else {
-            emptyHint.style.display = 'none';
-            oldestLoadedKey = keys[0];
-            keys.forEach((key) => {
-              const msg = val[key];
-              if (!msg || dedupMap.has(key)) return;
-              dedupMap.set(key, msg);
-              upsertMessageDOM(key, msg, false);
-              markAsReadIfPartnerMessage(key, msg);
-            });
-            if (keys.length < INITIAL_LIMIT) allOlderLoaded = true;
-          }
+        if (keys.length === 0) {
+          emptyHint.textContent = "No messages yet. Say hello in The Garden 🌿";
+          allOlderLoaded = true;
+        } else {
+          emptyHint.style.display = 'none';
+          oldestLoadedKey = keys[0];
+          keys.forEach((key) => {
+            const msg = val[key];
+            if (!msg) return;
+            dedupMap.set(key, msg);
+            upsertMessageDOM(key, msg, false);
+            markAsReadIfPartnerMessage(key, msg);
+          });
+          if (keys.length < INITIAL_LIMIT) allOlderLoaded = true;
+        }
 
-          isInitialLoadComplete = true;
-          scrollToBottom(false);
-          attachLiveFirebaseListeners();
-          attachInfiniteScroll();
-        })
-        .catch((err) => {
-          console.error("Chat load error:", err);
-          emptyHint.textContent = "Unable to connect. Please check your internet.";
-        });
+        scrollToBottom(false);
+        attachLiveFirebaseListeners(feedQuery);
+        attachInfiniteScroll();
+      }).catch((err) => {
+        console.error("Chat load error:", err);
+        emptyHint.textContent = "Unable to connect. Please check your internet.";
+        attachLiveFirebaseListeners(feedQuery);
+      });
     }
 
-    function attachLiveFirebaseListeners() {
+    function attachLiveFirebaseListeners(feedQuery) {
       if (listenersAttached) return;
       listenersAttached = true;
 
-      const feedRef = db.ref('appState/chatFeed');
-
-      feedRef.on('child_added', (snapshot) => {
-        if (!isInitialLoadComplete) return;
+      // Live listener streams every new message immediately without needing refresh
+      feedQuery.on('child_added', (snapshot) => {
         const key = snapshot.key;
         const msg = snapshot.val();
-        if (!key || !msg || dedupMap.has(key)) return;
+        if (!key || !msg) return;
 
-        document.getElementById('empty-chat-hint').style.display = 'none';
+        const alreadyRendered = dedupMap.has(key);
         dedupMap.set(key, msg);
+        document.getElementById('empty-chat-hint').style.display = 'none';
 
         const wasNearBottom = isNearBottom();
         upsertMessageDOM(key, msg, false);
         markAsReadIfPartnerMessage(key, msg);
 
-        if (wasNearBottom || msg.sender === currentUserRole) {
-          scrollToBottom(true);
-        } else if (msg.sender !== currentUserRole) {
-          unreadCount++;
-          updateUnreadPill();
+        if (!alreadyRendered) {
+          if (wasNearBottom || msg.sender === currentUserRole) {
+            scrollToBottom(true);
+          } else {
+            unreadCount++;
+            updateUnreadPill();
+          }
         }
       });
 
-      feedRef.on('child_changed', (snapshot) => {
+      feedQuery.on('child_changed', (snapshot) => {
         const key = snapshot.key;
         const msg = snapshot.val();
         if (!key || !msg) return;
@@ -1205,7 +1261,7 @@
         upsertMessageDOM(key, msg, false);
       });
 
-      feedRef.on('child_removed', (snapshot) => {
+      feedQuery.on('child_removed', (snapshot) => {
         const key = snapshot.key;
         dedupMap.delete(key);
         const el = document.getElementById(`msg-${key}`);
@@ -1241,7 +1297,7 @@
       db.ref('appState/chatFeed')
         .orderByKey()
         .endAt(cursor)
-        .limitToLast(51)
+        .limitToLast(26)
         .once('value')
         .then((snapshot) => {
           const val = snapshot.val() || {};
@@ -1258,7 +1314,7 @@
               upsertMessageDOM(key, msg, true);
             }
             oldestLoadedKey = olderKeys[0];
-            if (olderKeys.length < 50) allOlderLoaded = true;
+            if (olderKeys.length < 25) allOlderLoaded = true;
             chatStream.scrollTop = prevTop + (chatStream.scrollHeight - prevHeight);
           }
         })
@@ -1274,7 +1330,7 @@
         db.ref(`appState/chatFeed/${key}`).update({
           status: 'read',
           readAt: firebase.database.ServerValue.TIMESTAMP
-        });
+        }).catch(() => {});
       }
     }
 
@@ -1285,7 +1341,7 @@
           db.ref(`appState/presence/${getMyKey()}`).update({
             online: true,
             lastSeen: firebase.database.ServerValue.TIMESTAMP
-          });
+          }).catch(() => {});
         }
       });
     }
@@ -1296,7 +1352,7 @@
           db.ref(`appState/chatFeed/${key}`).update({
             status: 'read',
             readAt: firebase.database.ServerValue.TIMESTAMP
-          });
+          }).catch(() => {});
         }
       });
     }
@@ -1310,7 +1366,6 @@
       const historyLoader = document.getElementById('history-loader');
       const myKey = getMyKey();
 
-      // Hide if deleted for current user
       if (msg.deletedFor && msg.deletedFor[myKey]) {
         const existing = document.getElementById(`msg-${key}`);
         if (existing) existing.remove();
@@ -1347,7 +1402,6 @@
         return;
       }
 
-      // Reply quote block
       let replyHTML = '';
       if (msg.replyTo && msg.replyTo.text) {
         replyHTML = `
@@ -1358,7 +1412,6 @@
         `;
       }
 
-      // Text formatting with clickable links
       const rawText = msg.text || '';
       const linkedText = escapeHTML(rawText).replace(
         /(https?:\/\/[^\s]+)/g,
@@ -1372,7 +1425,6 @@
         mediaHTML = `<img src="${msg.media}" class="msg-media-img" loading="lazy" onclick="openLightbox('${msg.media}')">`;
       }
 
-      // Read receipt ticks for self messages
       let receiptHTML = '';
       if (isSelf) {
         const isRead = Boolean(msg.readAt || msg.status === 'read');
@@ -1411,6 +1463,7 @@
         input.value = '';
       }
       stopTypingImmediately();
+      document.getElementById('empty-chat-hint').style.display = 'none';
 
       const payload = {
         sender: currentUserRole,
@@ -1436,8 +1489,13 @@
       }
 
       try {
-        await db.ref('appState/chatFeed').push(payload);
+        const newRef = db.ref('appState/chatFeed').push();
+        const localKey = newRef.key;
+        dedupMap.set(localKey, payload);
+        upsertMessageDOM(localKey, payload, false);
         scrollToBottom(true);
+
+        await newRef.set(payload);
         notifyViaTelegram(currentUserRole, text || `[Sent ${mediaType}]`);
       } catch (err) {
         console.error("Send failed:", err);
