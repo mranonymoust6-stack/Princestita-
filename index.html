@@ -496,6 +496,18 @@
       object-fit: cover;
     }
 
+    .msg-media-gif {
+      width: 210px;
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 14px;
+      margin-top: 4px;
+      display: block;
+      cursor: pointer;
+      object-fit: cover;
+      background: var(--garden-light);
+    }
+
     .msg-media-audio {
       width: 220px;
       max-width: 100%;
@@ -612,7 +624,209 @@
       flex-direction: column;
       gap: 6px;
       flex-shrink: 0;
+      position: relative;
       z-index: 20;
+    }
+
+    /* WHATSAPP-STYLE POPUP GIF PICKER */
+    .gif-picker-popup {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 10px;
+      right: 10px;
+      max-height: 330px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      box-shadow: 0 10px 28px rgba(28, 38, 30, 0.14);
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 40;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .gif-picker-popup.open {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (min-width: 580px) {
+      .gif-picker-popup {
+        width: 360px;
+        left: 12px;
+        right: auto;
+      }
+    }
+
+    .gif-picker-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .gif-search-input {
+      flex: 1;
+      background: var(--bg-page);
+      border: 1px solid transparent;
+      border-radius: 16px;
+      padding: 7px 12px;
+      font-family: inherit;
+      font-size: 0.84rem;
+      color: var(--text-main);
+      outline: none;
+      min-width: 0;
+    }
+
+    .gif-search-input:focus {
+      background: #FFFFFF;
+      border-color: var(--garden-primary);
+    }
+
+    .gif-close-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg-page);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .gif-close-btn:hover {
+      background: var(--garden-light);
+      color: var(--garden-dark);
+    }
+
+    .gif-categories-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .gif-categories-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .gif-cat-chip {
+      background: var(--bg-cream);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .gif-cat-chip:hover {
+      background: var(--garden-light);
+    }
+
+    .gif-cat-chip.active {
+      background: var(--garden-primary);
+      color: #FFFFFF;
+      border-color: var(--garden-primary);
+    }
+
+    .gif-grid-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 2px;
+    }
+
+    .gif-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    @media (min-width: 440px) {
+      .gif-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .gif-tile {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-page);
+      aspect-ratio: 1 / 1;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .gif-tile:hover {
+      border-color: var(--garden-primary);
+      transform: scale(0.98);
+    }
+
+    .gif-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .gif-status-msg {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 14px 8px;
+    }
+
+    .gif-load-more-btn {
+      align-self: center;
+      background: var(--garden-light);
+      color: var(--garden-dark);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 5px 14px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .gif-load-more-btn:hover {
+      background: var(--garden-mint);
+    }
+
+    .gif-picker-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      padding-top: 2px;
+    }
+
+    .gif-badge-btn {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .gif-badge-btn.active {
+      background: var(--garden-primary);
+      color: #FFFFFF;
     }
 
     /* REPLY PREVIEW BAR */
@@ -684,12 +898,12 @@
     .input-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .tool-icon-btn {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       border: none;
       background: var(--bg-page);
@@ -697,7 +911,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
+      font-size: 1.08rem;
       cursor: pointer;
       flex-shrink: 0;
       transition: background 0.15s;
@@ -712,7 +926,7 @@
       background: var(--bg-page);
       border: 1px solid transparent;
       border-radius: 22px;
-      padding: 9px 15px;
+      padding: 9px 14px;
       font-family: inherit;
       font-size: 0.92rem;
       color: var(--text-main);
@@ -911,6 +1125,33 @@
 
     <!-- BOTTOM MESSAGE BAR -->
     <footer class="chat-footer">
+      <!-- WHATSAPP-STYLE POPUP GIF PICKER -->
+      <div class="gif-picker-popup" id="gif-picker-popup" role="dialog" aria-label="GIF Picker">
+        <div class="gif-picker-top">
+          <input
+            type="text"
+            class="gif-search-input"
+            id="gif-search-input"
+            placeholder="Search GIFs..."
+            autocomplete="off"
+            oninput="onGifSearchInput()"
+          />
+          <button type="button" class="gif-close-btn" onclick="closeGifPicker()" aria-label="Close GIF Picker">✕</button>
+        </div>
+
+        <div class="gif-categories-row" id="gif-categories-row"></div>
+
+        <div class="gif-grid-scroll" id="gif-grid-scroll">
+          <div class="gif-grid" id="gif-grid"></div>
+          <div class="gif-status-msg" id="gif-status-msg"></div>
+          <button type="button" class="gif-load-more-btn" id="gif-load-more-btn" style="display:none;" onclick="loadMoreGifs()">Load more</button>
+        </div>
+
+        <div class="gif-picker-footer">
+          <span>Powered by GIPHY</span>
+        </div>
+      </div>
+
       <!-- REPLY QUOTE PREVIEW -->
       <div class="reply-preview-bar" id="reply-preview-bar">
         <div class="reply-preview-text" id="reply-preview-content"></div>
@@ -922,7 +1163,9 @@
 
       <!-- MESSAGE COMPOSER -->
       <div class="input-row">
-        <button class="tool-icon-btn" onclick="toggleEmojiDrawer()" title="Emojis" aria-label="Emojis">😊</button>
+        <button type="button" class="tool-icon-btn" onclick="toggleEmojiDrawer()" title="Emojis" aria-label="Emojis">😊</button>
+
+        <button type="button" class="tool-icon-btn gif-badge-btn" id="gif-toggle-btn" onclick="toggleGifPicker()" title="GIFs" aria-label="GIFs">GIF</button>
 
         <label class="tool-icon-btn" title="Record or Send Audio" aria-label="Voice Recorder / Audio">
           🎵
@@ -944,7 +1187,7 @@
           onkeydown="if(event.key === 'Enter' && !event.shiftKey){ event.preventDefault(); sendMessage(); }"
         />
 
-        <button class="send-btn" onclick="sendMessage()" title="Send" aria-label="Send">
+        <button type="button" class="send-btn" onclick="sendMessage()" title="Send" aria-label="Send">
           <svg viewBox="0 0 24 24">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
           </svg>
@@ -1009,6 +1252,10 @@
     const TELEGRAM_BOT_TOKEN = "7963353459:AAFfF6GkllP5A5m825p39G53r-g4u0W6GvA";
     const TELEGRAM_CHAT_ID = "8283865056";
 
+    // GIPHY API Configuration
+    const GIPHY_API_KEY = "Fip2a2CjC7v3uAoWQ38Gyi9gre3Mv2x1";
+    const GIPHY_PAGE_SIZE = 15;
+
     // =========================================================
     // 2. APPLICATION STATE
     // =========================================================
@@ -1030,6 +1277,29 @@
     let pendingDeleteKey = null;
     let unreadCount = 0;
 
+    // GIF Picker State
+    let gifPickerOpen = false;
+    let gifCurrentQuery = '';
+    let gifActiveCategory = '';
+    let gifOffset = 0;
+    let gifLoading = false;
+    let gifHasMore = false;
+    let gifDebounceTimer = null;
+    const gifCache = new Map();
+
+    const GIF_CATEGORIES = [
+      { label: "🐱 Cats", query: "cute cats" },
+      { label: "🤍 White Kitty", query: "white kitten" },
+      { label: "💕 Couple", query: "romantic couple" },
+      { label: "❤️ Love", query: "love hearts" },
+      { label: "🫂 Hug", query: "hug" },
+      { label: "😘 Kiss", query: "kiss" },
+      { label: "😾 Angry", query: "angry reaction" },
+      { label: "😂 Funny", query: "funny reaction" },
+      { label: "🥺 Sad", query: "crying sad" },
+      { label: "🌙 Good Night", query: "good night" }
+    ];
+
     const EMOJI_LIST = [
       "🌿", "🌸", "🌺", "🌹", "🦋", "🤍", "💚", "💖", "🥰", "😘",
       "🥺", "😊", "😂", "🤗", "🫂", "✨", "🌙", "☀️", "🍓", "☕",
@@ -1041,6 +1311,7 @@
     // =========================================================
     window.addEventListener('DOMContentLoaded', () => {
       renderEmojiDrawer();
+      renderGifCategories();
 
       if (currentUserRole === "Mr. Sudip" || currentUserRole === "Mrs. Sudip") {
         document.getElementById('gateway').classList.add('hidden');
@@ -1368,7 +1639,7 @@
     }
 
     // =========================================================
-    // 6. DOM RENDERING FOR MESSAGE BUBBLES
+    // 6. DOM RENDERING FOR MESSAGE BUBBLES (TEXT, MEDIA, GIF)
     // =========================================================
     function upsertMessageDOM(key, msg, prepend) {
       const chatStream = document.getElementById('chat-stream');
@@ -1433,7 +1704,10 @@
       );
 
       let mediaHTML = '';
-      if (msg.media && msg.mediaType === 'audio') {
+      if (msg.type === 'gif' && (msg.gifUrl || msg.previewUrl)) {
+        const displaySrc = msg.gifUrl || msg.previewUrl;
+        mediaHTML = `<img src="${escapeHTML(displaySrc)}" alt="GIF" class="msg-media-gif" loading="lazy" onclick="openLightbox('${escapeAttr(displaySrc)}')">`;
+      } else if (msg.media && msg.mediaType === 'audio') {
         mediaHTML = `<audio src="${msg.media}" controls class="msg-media-audio" preload="metadata"></audio>`;
       } else if (msg.media && (msg.mediaType === 'image' || msg.mediaType === 'meme')) {
         mediaHTML = `<img src="${msg.media}" class="msg-media-img" loading="lazy" onclick="openLightbox('${msg.media}')">`;
@@ -1445,7 +1719,9 @@
         receiptHTML = `<span class="receipt-ticks ${isRead ? 'read' : ''}" title="${isRead ? 'Read' : 'Delivered'}">✓✓</span>`;
       }
 
-      const previewSnippet = rawText || (msg.mediaType === 'audio' ? '🎵 Voice/Audio' : '📷 Photo');
+      const previewSnippet = msg.type === 'gif'
+        ? '🎞️ GIF'
+        : (rawText || (msg.mediaType === 'audio' ? '🎵 Voice/Audio' : '📷 Photo'));
 
       row.innerHTML = `
         ${topBadgeHTML}
@@ -1466,7 +1742,7 @@
     }
 
     // =========================================================
-    // 7. SENDING, REPLYING, ATTACHMENTS & DELETING
+    // 7. SENDING, REPLYING, ATTACHMENTS, GIFS & DELETING
     // =========================================================
     async function sendMessage(overrideText = null, mediaData = null, mediaType = null) {
       const input = document.getElementById('chat-input');
@@ -1481,6 +1757,8 @@
       document.getElementById('empty-chat-hint').style.display = 'none';
 
       const payload = {
+        type: 'text',
+        senderId: getMyKey(),
         sender: currentUserRole,
         text: text,
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
@@ -1499,6 +1777,7 @@
       }
 
       if (mediaData) {
+        payload.type = mediaType || 'media';
         payload.media = mediaData;
         payload.mediaType = mediaType;
       }
@@ -1515,6 +1794,51 @@
       } catch (err) {
         console.error("Send failed:", err);
         alert("Message could not be sent. Please check connection.");
+      }
+    }
+
+    async function sendGifMessage(gifItem) {
+      if (!gifItem || !gifItem.gifUrl) return;
+
+      closeGifPicker();
+      stopTypingImmediately();
+      document.getElementById('empty-chat-hint').style.display = 'none';
+
+      const payload = {
+        type: 'gif',
+        gifUrl: gifItem.gifUrl,
+        previewUrl: gifItem.previewUrl || gifItem.gifUrl,
+        provider: 'giphy',
+        senderId: getMyKey(),
+        sender: currentUserRole,
+        text: '',
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        timestamp: Date.now(),
+        status: 'delivered',
+        deletedForEveryone: false
+      };
+
+      if (activeReply) {
+        payload.replyTo = {
+          key: activeReply.key,
+          sender: activeReply.sender,
+          text: activeReply.text
+        };
+        cancelReply();
+      }
+
+      try {
+        const newRef = db.ref('appState/chatFeed').push();
+        const localKey = newRef.key;
+        dedupMap.set(localKey, payload);
+        upsertMessageDOM(localKey, payload, false);
+        scrollToBottom(true);
+
+        await newRef.set(payload);
+        notifyViaTelegram(currentUserRole, `🎞️ Sent a GIF (${gifCurrentQuery || 'Trending'})`);
+      } catch (err) {
+        console.error("GIF send failed:", err);
+        alert("Could not send GIF. Please try again.");
       }
     }
 
@@ -1569,7 +1893,9 @@
           await db.ref(`appState/chatFeed/${key}`).update({
             deletedForEveryone: true,
             text: '',
-            media: null
+            media: null,
+            gifUrl: null,
+            previewUrl: null
           });
         } else {
           await db.ref(`appState/chatFeed/${key}/deletedFor/${myKey}`).set(true);
@@ -1585,7 +1911,177 @@
     }
 
     // =========================================================
-    // 8. PRESERVED JITSI CALL & WATCH TOGETHER INTEGRATIONS
+    // 8. WHATSAPP-STYLE GIPHY PICKER LOGIC
+    // =========================================================
+    function renderGifCategories() {
+      const row = document.getElementById('gif-categories-row');
+      row.innerHTML = GIF_CATEGORIES.map((cat, idx) =>
+        `<button type="button" class="gif-cat-chip" data-cat-idx="${idx}" onclick="selectGifCategory(${idx})">${cat.label}</button>`
+      ).join('');
+    }
+
+    function toggleGifPicker() {
+      if (gifPickerOpen) {
+        closeGifPicker();
+      } else {
+        openGifPicker();
+      }
+    }
+
+    function openGifPicker() {
+      document.getElementById('emoji-drawer').classList.remove('open');
+      gifPickerOpen = true;
+      document.getElementById('gif-picker-popup').classList.add('open');
+      document.getElementById('gif-toggle-btn').classList.add('active');
+
+      const searchInput = document.getElementById('gif-search-input');
+      searchInput.focus();
+
+      if (document.getElementById('gif-grid').children.length === 0) {
+        fetchGiphyBatch('', true);
+      }
+    }
+
+    function closeGifPicker() {
+      gifPickerOpen = false;
+      document.getElementById('gif-picker-popup').classList.remove('open');
+      document.getElementById('gif-toggle-btn').classList.remove('active');
+    }
+
+    function selectGifCategory(idx) {
+      const cat = GIF_CATEGORIES[idx];
+      if (!cat) return;
+
+      gifActiveCategory = cat.query;
+      gifCurrentQuery = cat.query;
+      document.getElementById('gif-search-input').value = cat.query;
+
+      document.querySelectorAll('.gif-cat-chip').forEach((chip) => {
+        chip.classList.toggle('active', Number(chip.dataset.catIdx) === idx);
+      });
+
+      fetchGiphyBatch(cat.query, true);
+    }
+
+    function onGifSearchInput() {
+      const q = document.getElementById('gif-search-input').value.trim();
+      gifActiveCategory = '';
+      document.querySelectorAll('.gif-cat-chip').forEach(chip => chip.classList.remove('active'));
+
+      if (gifDebounceTimer) clearTimeout(gifDebounceTimer);
+      gifDebounceTimer = setTimeout(() => {
+        fetchGiphyBatch(q, true);
+      }, 350);
+    }
+
+    function loadMoreGifs() {
+      if (gifLoading || !gifHasMore) return;
+      fetchGiphyBatch(gifCurrentQuery, false);
+    }
+
+    async function fetchGiphyBatch(query, reset) {
+      if (gifLoading) return;
+
+      if (!GIPHY_API_KEY) {
+        document.getElementById('gif-grid').innerHTML = '';
+        document.getElementById('gif-load-more-btn').style.display = 'none';
+        document.getElementById('gif-status-msg').textContent = "GIPHY API key is missing.";
+        return;
+      }
+
+      if (reset) {
+        gifCurrentQuery = query;
+        gifOffset = 0;
+        gifHasMore = false;
+        document.getElementById('gif-grid').innerHTML = '';
+        document.getElementById('gif-load-more-btn').style.display = 'none';
+      }
+
+      const cacheKey = `${query || '__trending__'}::${gifOffset}`;
+      if (gifCache.has(cacheKey)) {
+        applyGifResults(gifCache.get(cacheKey), reset);
+        return;
+      }
+
+      gifLoading = true;
+      document.getElementById('gif-status-msg').textContent = "Loading GIFs...";
+
+      const endpoint = query
+        ? `https://api.giphy.com/v1/gifs/search?api_key=${encodeURIComponent(GIPHY_API_KEY)}&q=${encodeURIComponent(query)}&limit=${GIPHY_PAGE_SIZE}&offset=${gifOffset}&rating=g`
+        : `https://api.giphy.com/v1/gifs/trending?api_key=${encodeURIComponent(GIPHY_API_KEY)}&limit=${GIPHY_PAGE_SIZE}&offset=${gifOffset}&rating=g`;
+
+      try {
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const items = (json.data || []).map((g) => {
+          const images = g.images || {};
+          const fullGif = (images.downsized_medium && images.downsized_medium.url)
+            || (images.downsized && images.downsized.url)
+            || (images.fixed_height && images.fixed_height.url)
+            || (images.original && images.original.url)
+            || '';
+          const preview = (images.fixed_width_small && images.fixed_width_small.url)
+            || (images.fixed_width && images.fixed_width.url)
+            || fullGif;
+          return {
+            id: g.id,
+            title: g.title || 'GIF',
+            gifUrl: fullGif,
+            previewUrl: preview
+          };
+        }).filter(item => item.gifUrl && item.previewUrl);
+
+        const pagination = json.pagination || {};
+        const totalCount = pagination.total_count || 0;
+        const nextOffset = gifOffset + items.length;
+        const hasMore = items.length > 0 && nextOffset < totalCount;
+
+        const payload = { items, nextOffset, hasMore };
+        gifCache.set(cacheKey, payload);
+        applyGifResults(payload, reset);
+      } catch (err) {
+        console.error("GIPHY fetch error:", err);
+        document.getElementById('gif-status-msg').textContent = "Couldn't load GIFs right now. Please try again.";
+        document.getElementById('gif-load-more-btn').style.display = 'none';
+      } finally {
+        gifLoading = false;
+      }
+    }
+
+    function applyGifResults(payload, reset) {
+      const grid = document.getElementById('gif-grid');
+      const statusMsg = document.getElementById('gif-status-msg');
+      const loadMoreBtn = document.getElementById('gif-load-more-btn');
+
+      if (reset) {
+        grid.innerHTML = '';
+      }
+
+      if (!payload.items.length && reset) {
+        statusMsg.textContent = "No matching GIFs found.";
+        loadMoreBtn.style.display = 'none';
+        return;
+      }
+
+      payload.items.forEach((item) => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'gif-tile';
+        tile.title = item.title;
+        tile.innerHTML = `<img src="${escapeHTML(item.previewUrl)}" alt="${escapeHTML(item.title)}" loading="lazy">`;
+        tile.onclick = () => sendGifMessage(item);
+        grid.appendChild(tile);
+      });
+
+      gifOffset = payload.nextOffset;
+      gifHasMore = payload.hasMore;
+      statusMsg.textContent = '';
+      loadMoreBtn.style.display = gifHasMore ? 'inline-block' : 'none';
+    }
+
+    // =========================================================
+    // 9. PRESERVED JITSI CALL & WATCH TOGETHER INTEGRATIONS
     // =========================================================
     function launchJitsiCall() {
       if (currentUserRole === "Mrs. Sudip") {
@@ -1613,7 +2109,7 @@
     }
 
     // =========================================================
-    // 9. UI HELPERS & UTILITIES
+    // 10. UI HELPERS & UTILITIES
     // =========================================================
     function renderEmojiDrawer() {
       const drawer = document.getElementById('emoji-drawer');
@@ -1623,6 +2119,7 @@
     }
 
     function toggleEmojiDrawer() {
+      closeGifPicker();
       document.getElementById('emoji-drawer').classList.toggle('open');
     }
 
